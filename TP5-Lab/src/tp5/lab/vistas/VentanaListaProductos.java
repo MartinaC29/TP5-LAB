@@ -5,6 +5,10 @@
 package tp5.lab.vistas;
 
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import tp5.lab.entidades.Producto;
 
 /**
@@ -13,14 +17,17 @@ import tp5.lab.entidades.Producto;
  */
 public class VentanaListaProductos extends javax.swing.JFrame {
     private HashSet<Producto> productos = new HashSet<>();
+    private boolean precioInvalido = false;
+    private DefaultTableModel model;
     /**
      * Creates new form VentanaListaProductos
      */
     public VentanaListaProductos() {
         initComponents();
-        
+        this.model = (DefaultTableModel) jtTabla.getModel();
+        jlPrecioInvalido.setVisible(false);   
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -40,6 +47,7 @@ public class VentanaListaProductos extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jtPrecio = new javax.swing.JTextField();
         jbAgregar = new javax.swing.JButton();
+        jlPrecioInvalido = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jtTabla = new javax.swing.JTable();
@@ -57,15 +65,38 @@ public class VentanaListaProductos extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel1.setText("Gestion de productos");
+        jLabel1.setFont(new java.awt.Font("Arial Black", 0, 14)); // NOI18N
+        jLabel1.setText("Lista Productos");
 
-        jcCategoria.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Ropa", "Electronica", "Alimentos", "" }));
+        jcCategoria.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Ropa", "Electronica", "Alimentos" }));
 
         jLabel2.setText("Categoría:");
 
         jLabel3.setText("Nombre:");
 
+        jtNombre.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                jtNombreFocusLost(evt);
+            }
+        });
+        jtNombre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jtNombreActionPerformed(evt);
+            }
+        });
+
         jLabel4.setText("Precio:");
+
+        jtPrecio.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                jtPrecioFocusLost(evt);
+            }
+        });
+        jtPrecio.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jtPrecioKeyReleased(evt);
+            }
+        });
 
         jbAgregar.setText("Agregar");
         jbAgregar.addActionListener(new java.awt.event.ActionListener() {
@@ -74,27 +105,33 @@ public class VentanaListaProductos extends javax.swing.JFrame {
             }
         });
 
+        jlPrecioInvalido.setFont(new java.awt.Font("Source Sans Pro Semibold", 0, 10)); // NOI18N
+        jlPrecioInvalido.setForeground(new java.awt.Color(255, 51, 51));
+        jlPrecioInvalido.setText("Campo invalido: Ingrese un nro");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(30, 30, 30)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(35, 35, 35)
-                        .addComponent(jtPrecio))
+                        .addGap(13, 13, 13)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jlPrecioInvalido)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jcCategoria, 0, 163, Short.MAX_VALUE)
-                            .addComponent(jtNombre))))
-                .addGap(18, 18, 18)
-                .addComponent(jbAgregar)
+                            .addComponent(jtPrecio)
+                            .addComponent(jcCategoria, 0, 176, Short.MAX_VALUE)
+                            .addComponent(jtNombre))
+                        .addGap(18, 18, 18)
+                        .addComponent(jbAgregar)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -110,37 +147,32 @@ public class VentanaListaProductos extends javax.swing.JFrame {
                     .addComponent(jtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jbAgregar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(jtPrecio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jtPrecio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jlPrecioInvalido)
+                .addContainerGap(31, Short.MAX_VALUE))
         );
 
         jtTabla.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+
             },
             new String [] {
                 "Nombre", "Categoría", "Precio"
             }
         ));
         jScrollPane3.setViewportView(jtTabla);
-        if (jtTabla.getColumnModel().getColumnCount() > 0) {
-            jtTabla.getColumnModel().getColumn(0).setHeaderValue("Nombre");
-            jtTabla.getColumnModel().getColumn(1).setHeaderValue("Categoría");
-            jtTabla.getColumnModel().getColumn(2).setHeaderValue("Precio");
-        }
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(15, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 374, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(14, 14, 14))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -156,21 +188,21 @@ public class VentanaListaProductos extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(161, 161, 161)
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(30, 30, 30)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(19, Short.MAX_VALUE))
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(148, 148, 148)
+                        .addComponent(jLabel1)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -181,16 +213,76 @@ public class VentanaListaProductos extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAgregarActionPerformed
+        borrarFilas();
+        Double precio = null;
         String categoria = jcCategoria.getSelectedItem().toString();
-        String nombre = jtNombre.getText();
-        Double precio = Double.parseDouble(jtPrecio.getText());
+        String nombre = jtNombre.getText();       
         
-        Producto prod = new Producto(categoria,precio,nombre);
-        productos.add(prod);
+        if (jtNombre.getText().isEmpty() || jtPrecio.getText().isEmpty()) {
+            for(Producto prd: productos){
+                model.addRow(new Object[]{prd.getNombre(),prd.getCategoria(),prd.getPrecio()});
+            }
+            JOptionPane.showMessageDialog(this, "Hay campos sin completar");
+            return;
+        }
         
+        if (validarPrecio(jtPrecio.getText())) {
+            precio = Double.valueOf(jtPrecio.getText());
+            precioInvalido = false;
+        }else{
+            jlPrecioInvalido.setVisible(true);
+            precioInvalido = true;
+        }
         
+        if (!precioInvalido) {
+            Producto prod = new Producto(categoria,precio,nombre);
+            productos.add(prod);  
+            limpiarCampos();
+            for(Producto prd: productos){
+                model.addRow(new Object[]{prd.getNombre(),prd.getCategoria(),prd.getPrecio()});
+            }
+        }else{
+            for(Producto prd: productos){
+                model.addRow(new Object[]{prd.getNombre(),prd.getCategoria(),prd.getPrecio()});
+            }
+        }
+     
     }//GEN-LAST:event_jbAgregarActionPerformed
 
+    private void jtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtNombreActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jtNombreActionPerformed
+
+    private void jtNombreFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jtNombreFocusLost
+
+    }//GEN-LAST:event_jtNombreFocusLost
+
+    private void jtPrecioFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jtPrecioFocusLost
+        
+    }//GEN-LAST:event_jtPrecioFocusLost
+
+    private void jtPrecioKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtPrecioKeyReleased
+        jlPrecioInvalido.setVisible(false);      
+    }//GEN-LAST:event_jtPrecioKeyReleased
+    
+    public boolean validarPrecio(String n){
+        Pattern p = Pattern.compile("^[-+]?[0-9]*\\.?[0-9]+$");
+        Matcher m = p.matcher(jtPrecio.getText());
+        return m.matches();
+    }
+    
+    public void limpiarCampos(){
+        jtNombre.setText("");
+        jtPrecio.setText("");
+    }
+    
+    public void borrarFilas(){
+        int filas=model.getRowCount()-1;
+         for(int f=filas;f >= 0;f--){
+             model.removeRow(f);
+         }
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -237,6 +329,7 @@ public class VentanaListaProductos extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JButton jbAgregar;
     private javax.swing.JComboBox<String> jcCategoria;
+    private javax.swing.JLabel jlPrecioInvalido;
     private javax.swing.JTextField jtNombre;
     private javax.swing.JTextField jtPrecio;
     private javax.swing.JTable jtTabla;
